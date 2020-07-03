@@ -9,4 +9,12 @@ tags:
   - ELK
 ---
 
-In this series will be exploring some basic concept in docker and docker-compose. 
+In this series will be exploring some basic concept in docker and docker-compose.
+
+
+## Walkthrough Start
+We'll first need to create a docker vip:
+
+```powershell
+docker network create bryson-lab-net
+```
