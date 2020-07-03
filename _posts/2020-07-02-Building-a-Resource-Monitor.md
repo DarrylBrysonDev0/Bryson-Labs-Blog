@@ -13,9 +13,10 @@ tags:
 
 Welcome to the first in a series of posts that follows my recent training with Docker. I developed a specific as an enterprise developer, having most of my experiance in automotive engineering/quality. During the on going Pandemic, I decided to take the extra time I had to learn Docker. Primarily with a focus on how to apply modern DevOps tools and concepts to the Monilithic/data-center based/regulated solutions I've built most my career.
 
-I do assume ----------------- Assume you know what and why for Docker -----------------
+I do assume:
+---- Assume you know what and why for Docker ----
 
------------------ My_Docker_Setup_&_Windows_Setup -----------------
+---- My_Docker_Setup_&_Windows_Setup -------------
 
 In this post we'll cover the basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. Will be using the following design pattern:
 
