@@ -59,7 +59,7 @@ plugins:
 
 author:
   name   : "Darryl Bryson"
-  avatar : "assets\images\Darryl-Headshot.png"
+  avatar : "assets/images/Darryl-Headshot.png"
   bio    : "BI solution achitect...Solving business problems by any technology neccessery"
   links:
     - label: "Website"
