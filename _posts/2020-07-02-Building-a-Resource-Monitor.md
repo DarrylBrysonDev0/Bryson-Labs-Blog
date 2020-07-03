@@ -9,21 +9,34 @@ tags:
   - ELK
 ---
 
-In this series will be exploring some basic concept in docker and docker-compose.
+*First in the series exploring the use of docker through a practicle Use Case.*
+
+Welcome to the first in a series of posts that follows my recent training with Docker. I developed a specific as an enterprise developer, having most of my experiance in automotive engineering/quality. During the on going Pandemic, I decided to take the extra time I had to learn Docker. Primarily with a focus on how to apply modern DevOps tools and concepts to the Monilithic/data-center based/regulated solutions I've built most my career.
+
+I do assume ----------------- Assume you know what and why for Docker -----------------
+
+----------------- My_Docker_Setup_&_Windows_Setup -----------------
+
+In this post we'll cover the basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. Will be using the following design pattern:
+
+----------------- Resource_Monitor_Design_Pattern -----------------
+
+----------------- Breakdown_Pattern_Elements ----------------------
+
+----------------- Benefits_of_Solution_Componets = Containers -----
 
 ## Learning Objectives
-Define
-- Docker CLI
+The learning objectives for this post are:
+1. Explore docker basics for running a sequince of interacting containers
     - network (create)
     - container (run)
-- ELK
+2. High level introduction to the ELK stack
     - Elasticsearch
     - MetricBeats
     - Kibana
     - Grafana
 
-
-## Walkthrough Start
+## Walkthrough Contents
 Process: 
 1. Create Docker network
 2. Create Elasticsearch container
@@ -35,14 +48,15 @@ Process:
 6. Config index pattern
 7. Configure Grafana
 
-We'll first need to create a Docker Overlay network:
+We'll first need to create a network for our containers to communicate on. By default if a network isn't specified the `docker0` would be used. check Docker documentation [here](https://docs.docker.com/engine/reference/commandline/network_create/) for more detailes. Creating a named network in docker is a simple command:
 
 ```powershell
 docker network create bryson-lab-net
 ```
-breakdown network
 
-Creating Elasticsearch container:
+The primary component that this solution is based around is Elasticsearch. Elasticsearch is a highly scalable and performant document database customized for index searches. It's also been very popular for log processing use cases. I've found that Elasticsearch is super simple to spin up and down in docker. When configured it right Elasticsearch makes for a good testing timeseries db.
+
+We can use a docker run command to create the Elasticsearch container:
 
 ```powershell
 docker container run -d --name elasticsearch  `
@@ -52,7 +66,13 @@ docker container run -d --name elasticsearch  `
     -e "discovery.type=single-node"  `
     elasticsearch:7.7.1
 ```
-breakdown run, -d, --name, --net , -p, -e, specific image versions
+I've split the command across multipule lines to highlight the parameters. In this command we: <!--breakdown run, -d, --name, --net , -p, -e, specific image versions-->
+- `docker container run` --> base command to create a container
+- `-d` --> run the container in `detachted` mode, this runs the container in the background from the terminals perspective
+- `--name elasticsearch` --> names the container elasticsearch
+- `-p 9200:9200 -p 9300:9300` --> connects the ports on the *host* (computer running docker) and the ports internal to the container. -p or -publish follows the pattern *host_port:container_port*
+- `-e "discovery.type=single-node"` --> sets the containers environment variable. Environment variables  pass configuration parametes into the containers.
+- `elasticsearch:7.7.1` --> Is the 7.7.1 version of the elasticsearch image. It's a good habit for dev or production to specify image versions. Alternativly the images could be specified `elasticsearch:latest` this would change the image that's downloaded to the most current release. In most cases that results in breaking changes.  
 
 Create Kibana container:
 
