@@ -48,7 +48,7 @@ Process:
 6. Config index pattern
 7. Configure Grafana
 
-We'll first need to create a network for our containers to communicate on. By default if a network isn't specified the `docker0` would be used. check Docker documentation [here](https://docs.docker.com/engine/reference/commandline/network_create/) for more detailes. Creating a named network in docker is a simple command:
+We'll first need to create a network for our containers to communicate on. By default if a network isn't specified the `docker0` would be used. Check Docker documentation [here](https://docs.docker.com/engine/reference/commandline/network_create/) for more detailes. Creating a named network in docker is a simple command:
 
 ```powershell
 docker network create bryson-lab-net
