@@ -59,8 +59,8 @@ plugins:
 
 author:
   name   : "Darryl Bryson"
-  avatar : "/assets/images/bio-photo.jpg"
-  bio    : "My awesome biography constrained to a sentence or two goes here."
+  avatar : "/assets/images/BrysonPMC-Black-White-Logo.png"
+  bio    : "BI solution achitect...Solving business problems by any technology neccessery"
   links:
     - label: "Website"
       icon: "fas fa-fw fa-link"
