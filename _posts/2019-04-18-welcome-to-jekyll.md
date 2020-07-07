@@ -6,3 +6,7 @@ categories:
 tags:
   - update
 ---
+
+Test img:
+
+<img src="{{ site.url }}{{ site.baseurl }}/assets/images/ELK-resource-monitor-design-pattern-wht-bkg.png" alt="ELK-resource-monitor-design-pattern-wht-bkg">
