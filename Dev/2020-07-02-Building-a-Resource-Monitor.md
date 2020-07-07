@@ -11,15 +11,16 @@ tags:
 
 *First in the series exploring the use of docker through a practicle Use Case.*
 
-Welcome to the first in a series of posts that follows my recent training with Docker. I developed a specific as an enterprise developer, having most of my experiance in automotive engineering/quality. During the on going Pandemic, I decided to take the extra time I had to learn Docker. Primarily with a focus on how to apply modern DevOps tools and concepts to the Monilithic/data-center based/regulated solutions I've built most my career.
+Welcome to the first in a series of posts that will follow my recent training with Docker. Most of my experiancedeveloping enterprise solutions has been gained inthe automotive indastry in varying engineering roles. During the on going Pandemic, I decided to take the extra time I had and learn Docker. Primarily with a focus on how to apply modern DevOps tools and concepts to the Monilithic/data-center based/regulated solutions I've built most my career.
 
 I do assume:
 
 ----- Assume you know what and why for Docker -----
 
 ----- My_Docker_Setup_&_Windows_Setup -----
+The setup I'm using is docker for windows API version 1.40 on Windows 10 Home. We'll be using Linux containers. I'm also using PowerShell 7 in Windows Terminal. If you're following allong on a Linux, commands are generally the same excluding some OS specific sintax (file path, line continueation).     
 
-In this post we'll cover the basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. Will be using the following design pattern:
+In this post we'll cover some basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. This use case has the following design pattern:
 
 ----- Resource_Monitor_Design_Pattern -----
 
