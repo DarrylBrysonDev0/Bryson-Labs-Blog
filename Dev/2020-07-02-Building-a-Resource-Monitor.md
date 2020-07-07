@@ -7,6 +7,7 @@ tags:
   - docker
   - walkthrough
   - ELK
+excerpt: "ELK Resource Monitor w/ Docker: Part-1 Docker CLI"
 ---
 
 *First in the series exploring the use of docker through a practicle Use Case.*

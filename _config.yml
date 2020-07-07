@@ -16,9 +16,7 @@
 title: Bryson-Labs Portfolio
 email: Bryson.Darryl@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
+  Project protfolio site for Bryson-Labs. A showcase of solutions by Darryl Bryson.
 twitter_username: DjDev0
 github_username: username
 minimal_mistakes_skin: dark
@@ -68,6 +66,9 @@ author:
     - label: "Alica R. Pruitt Foundation"
       icon: "fas fa-fw fa-link"
       url: "https://www.arpruittfoundation.org/"
+    - label: "LinkedIn"
+      icon: "fas fa-fw fa-linkedin-square"
+      url: "https://www.linkedin.com/in/darryl-bryson-6767bb149/"
     # - label: "Twitter"
     #   icon: "fab fa-fw fa-twitter-square"
     #   url: "https://twitter.com/"
@@ -86,6 +87,9 @@ footer:
     - label: "Alica R. Pruitt Foundation"
       icon: "fas fa-fw fa-link"
       url: "https://www.arpruittfoundation.org/"
+    - label: "LinkedIn"
+      icon: "fas fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/darryl-bryson-6767bb149/"
     # - label: "Twitter"
     #   icon: "fab fa-fw fa-twitter-square"
     #   url: "https://twitter.com/"
