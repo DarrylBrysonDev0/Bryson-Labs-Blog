@@ -19,19 +19,26 @@ I do assume:
 ----- Assume you know what and why for Docker -----
 
 ----- My_Docker_Setup_&_Windows_Setup -----
+
 The setup I'm using is docker for windows API version 1.40 on Windows 10 Home. We'll be using Linux containers. I'm also using PowerShell 7 in Windows Terminal. If you're following allong on a Linux, commands are generally the same excluding some OS specific sintax (file path, line continueation).     
 
 In this post we'll cover some basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. This use case has the following design pattern:
 
------ Resource_Monitor_Design_Pattern -----
+<img src="{{ site.url }}{{ site.baseurl }}/assets/images/ELK-resource-monitor-design-pattern-wht-bkg.png" alt="ELK-resource-monitor-design-pattern-wht-bkg">
 
------ Breakdown_Pattern_Elements -----
+Elements:
+1. Docker Server: Docker host running all containers for this solution.
+2. Application Server: Ubuntu server running unrelated workloads.
+3. MetricBeats: Lightweight shipper that sends host metric data to a central data store.
+4. Elasticsearch: Document database specilized for timeseries and log processing use cases
+5. Kibana: Mangament panel for Elasticsearch indices
+6. Grafana: Monitoring platform for creating dashboards
 
 ----- Benefits_of_Solution_Componets = Containers -----
 
 ## Learning Objectives
 The learning objectives for this post are:
-1. Explore docker basics for running a sequince of interacting containers
+1. Explore docker basics for running a sequince of containers
     - network (create)
     - container (run)
 2. High level introduction to the ELK stack
@@ -40,7 +47,7 @@ The learning objectives for this post are:
     - Kibana
     - Grafana
 
-## Walkthrough Contents
+## Build Process
 Process: 
 1. Create Docker network
 2. Create Elasticsearch container
@@ -52,50 +59,55 @@ Process:
 6. Config index pattern
 7. Configure Grafana
 
-We'll first need to create a network for our containers to communicate on. By default if a network isn't specified the `docker0` would be used. Check Docker documentation [here](https://docs.docker.com/engine/reference/commandline/network_create/) for more detailes. Creating a named network in docker is a simple command:
+We'll first need to create a network for our containers to communicate on. By default if a network isn't specified the `docker0` network would be used. it's generaly good practice to create a project specific network to provide some isolation from other projects you may have running. If you'd like additional information on this command check Docker's documentation [here](https://docs.docker.com/engine/reference/commandline/network_create/). The command for creatinga named network is straight forward:
 
 ```powershell
-docker network create bryson-lab-net
+docker network create resource-monitor-net
 ```
 
-The primary component that this solution is based around is Elasticsearch. Elasticsearch is a highly scalable and performant document database customized for index searches. It's also been very popular for log processing use cases. I've found that Elasticsearch is super simple to spin up and down in docker. When configured it right Elasticsearch makes for a good testing timeseries db.
+Elasticsearch is the core component for this solution. Elasticsearch is a highly scalable and performant document database customized for index searches. It's also been very popular option for powering log processing use cases. Many tools have created Elaticsearch interfaces and the API is simple/stable enough to create your own if needed. I've found that Elasticsearch is super simple to spin up and down in docker. When configured right Elasticsearch makes for a great testing timeseries db.
 
 We can use a docker run command to create the Elasticsearch container:
 
 ```powershell
 docker container run -d --name elasticsearch  `
-    --net bryson-lab-net  `
+    --net resource-monitor-net  `
     -p 9200:9200  `
     -p 9300:9300  `
     -e "discovery.type=single-node"  `
     elasticsearch:7.7.1
 ```
-I've split the command across multipule lines to highlight the parameters. In this command we: <!--breakdown run, -d, --name, --net , -p, -e, specific image versions-->
-- `docker container run` --> base command to create a container
-- `-d` --> run the container in `detachted` mode, this runs the container in the background from the terminals perspective
-- `--name elasticsearch` --> names the container elasticsearch
-- `-p 9200:9200 -p 9300:9300` --> connects the ports on the *host* (computer running docker) and the ports internal to the container. -p or -publish follows the pattern *host_port:container_port*
-- `-e "discovery.type=single-node"` --> sets the containers environment variable. Environment variables  pass configuration parametes into the containers.
-- `elasticsearch:7.7.1` --> Is the 7.7.1 version of the elasticsearch image. It's a good habit for dev or production to specify image versions. Alternativly the images could be specified `elasticsearch:latest` this would change the image that's downloaded to the most current release. In most cases that results in breaking changes.  
+I've split the command across multipule lines to highlight the parameters. Let's examine each parameter: <!--breakdown run, -d, --name, --net , -p, -e, specific image versions-->
+- `docker container run` --> This is the base command needed to create a container
+- `-d` --> Adding this flag signals docker to run the container in `detachted` mode. this keeps the container outputs in the background.
+- `--name elasticsearch` --> Names the container `elasticsearch`
+- `-p 9200:9200 -p 9300:9300` --> Connects the ports on the *host* (computer running docker) and the ports internal to the container. -p or -publish follows the pattern `<host_port>:<container_port>`
+- `-e "discovery.type=single-node"` --> Sets the containers environment variable. Environment variables are used to pass configuration parametes into the containers. In this case we must tell elasticsearch that it's running in singal node mode.
+- `elasticsearch:7.7.1` --> Is the 7.7.1 version of the elasticsearch image. It's a good habit for dev or production to specify image versions. Alternativly the images could be specified `elasticsearch:latest` this would change the image that's downloaded to the most current release. In most cases this causes  breaking changes.  
 
-Create Kibana container:
+Next well create a Kibana container to act as an admin panel for Elasticsearch. Kibana is intended to be a visualisation tool for Elasticsearch. I find the dashboarding components to be a bit difficault to work with and isn't very deep in features. 
+
+The command to create a Kibana container:
 
 ```powershell
 docker container run -d --name kibana  `
-    --net bryson-lab-net  `
+    --net resource-monitor-net  `
     -p 5601:5601  `
     -e SERVER_NAME='kibana_bryson-labs'  `
     -e ELASTICSEARCH_HOSTS='http://elasticsearch:9200'  `
     kibana:7.7.1
 ```
-breakdown kibana spcific env variables
+Comparing this command with the one for Elasticseach you can see that we've connected to the same network on port `5601`. We've also set 2 environment variables.
+- SERVER_NAME : seting the server name internal to kibana as 
+breakdown kibana spcific env variables 'kibana_bryson-labs'
+- ELASTICSEARCH_HOSTS : Defines what host and port to looks for Elasticsearch on.In this example you see one of the advatages to using a named network, container name resolution. Docker does some cool things with networking under the hood, one of them is a DNS that allows for container name resolution. With this a container can reference another container by name, provided they're on the same network. This is much better than the alternative of hard coding IP addresses. 
 
-Create MetricBeats container:
+After creating the Elasticsearch database and Kibana to mantain it, we can start feeding it our hosts metrics. This solution makes use of MetricBeats as a simple way of sending . Now that we have the elasticsearch setup waiting for datadatabase Create MetricBeats container:
 
 ```powershell
 docker container run -d --name=metricbeat `
     --hostname=docker-host-01  `
-    --net bryson-lab-net  `
+    --net resource-monitor-net  `
     -e setup.kibana.host=http://kibana:5601  `
     -e output.elasticsearch.hosts=["http://elasticsearch:9200"]  `
     --user=root `
@@ -134,7 +146,7 @@ Create Grafana container:
 
 ```powershell
 docker container run -d --name grafana `
-    --net bryson-lab-net  `
+    --net resource-monitor-net  `
     -p 3000:3000  `
     --volume lab_dash_data:/var/lib/grafana  `
     --volume "${pwd}\Grafana\grafana.ini:/etc/grafana/grafana.ini"  `

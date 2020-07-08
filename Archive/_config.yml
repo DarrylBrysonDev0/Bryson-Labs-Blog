@@ -60,7 +60,7 @@ plugins:
 author:
   name   : "Darryl Bryson"
   avatar : "assets/images/Darryl-Headshot.png"
-  bio    : "BI solution architect...Solving business problems by any technology neccessery"
+  bio    : "BI solution architect...Solving business problems by any technology necessary"
   links:
     - label: "BrysonPMC"
       icon: "fas fa-fw fa-link"
