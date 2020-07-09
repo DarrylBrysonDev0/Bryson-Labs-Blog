@@ -1,6 +1,6 @@
 ---
 title: "Docker Walkthrough: ELK Resource Monitor Part-1"
-date: 2020-07-02T10:21:30-04:00
+date: 2020-07-10T10:21:30-04:00
 categories:
   - Resource-Monitor
 tags:
@@ -139,7 +139,11 @@ This illistrats the biggest value propissition for Docker. Before container tech
 After installing MetricBeats the configuration file will need to be replaced. 
 1. Download the example config [example.metricbeat.yml]({{ site.url }}{{ site.baseurl }}/assets/files/resource-monitor/example.metricbeat.yml)
 2. Replace `<Docker-Server-IP>` with the ip address of the Docker server (Section to edit shown below)
-3.  :
+3. Rename the file metricbeats.yml and save to your config folder, this is deferent 
+
+
+# CP
+:
 - https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-installation.html
 - To configure copy [example.metricbeat.yml]({{ site.url }}{{ site.baseurl }}/assets/files/resource-monitor/example.metricbeat.yml) to 
 
@@ -159,7 +163,7 @@ output.elasticsearch:
 
 #----------------------------- Logstash output --------------------------------
 ``` 
-    
+
 
 breakdown yaml comment tags, yaml use as a config for many linux services.
 
