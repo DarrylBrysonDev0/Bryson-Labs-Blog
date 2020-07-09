@@ -59,12 +59,14 @@ Process:
 6. Config index pattern
 7. Configure Grafana
 
+### 1. Create Docker Network 
 We'll first need to create a network for our containers to communicate on. By default if a network isn't specified the `docker0` network would be used. it's generaly good practice to create a project specific network to provide some isolation from other projects you may have running. If you'd like additional information on this command check Docker's documentation [here](https://docs.docker.com/engine/reference/commandline/network_create/). The command for creatinga named network is straight forward:
 
 ```powershell
 docker network create resource-monitor-net
 ```
 
+### 2. Create Elasticsearch Container
 Elasticsearch is the core component for this solution. Elasticsearch is a highly scalable and performant document database customized for index searches. It's also been very popular option for powering log processing use cases. Many tools have created Elaticsearch interfaces and the API is simple/stable enough to create your own if needed. I've found that Elasticsearch is super simple to spin up and down in docker. When configured right Elasticsearch makes for a great testing timeseries db.
 
 We can use a docker run command to create the Elasticsearch container:
@@ -77,7 +79,8 @@ docker container run -d --name elasticsearch  `
     -e "discovery.type=single-node"  `
     elasticsearch:7.7.1
 ```
-I've split the command across multipule lines to highlight the parameters. Let's examine each parameter: <!--breakdown run, -d, --name, --net , -p, -e, specific image versions-->
+I've split the command across multipule lines to highlight the parameters. Let's examine each parameter: 
+<!-- breakdown run, -d, --name, --net , -p, -e, specific image versions -->
 - `docker container run` --> This is the base command needed to create a container
 - `-d` --> Adding this flag signals docker to run the container in `detachted` mode. this keeps the container outputs in the background.
 - `--name elasticsearch` --> Names the container `elasticsearch`
@@ -85,6 +88,7 @@ I've split the command across multipule lines to highlight the parameters. Let's
 - `-e "discovery.type=single-node"` --> Sets the containers environment variable. Environment variables are used to pass configuration parametes into the containers. In this case we must tell elasticsearch that it's running in singal node mode.
 - `elasticsearch:7.7.1` --> Is the 7.7.1 version of the elasticsearch image. It's a good habit for dev or production to specify image versions. Alternativly the images could be specified `elasticsearch:latest` this would change the image that's downloaded to the most current release. In most cases this causes  breaking changes.  
 
+###  3. Create Kibana Container 
 Next well create a Kibana container to act as an admin panel for Elasticsearch. Kibana is intended to be a visualisation tool for Elasticsearch. I find the dashboarding components to be a bit difficault to work with and isn't very deep in features. 
 
 The command to create a Kibana container:
@@ -97,16 +101,19 @@ docker container run -d --name kibana  `
     -e ELASTICSEARCH_HOSTS='http://elasticsearch:9200'  `
     kibana:7.7.1
 ```
-Comparing this command with the one for Elasticseach you can see that we've connected to the same network on port `5601`. We've also set 2 environment variables.
+Comparing this command with the one for Elasticseach you can see that we've connected to the same network this time on port `5601`. We've also set 2 environment variables.
 - SERVER_NAME : seting the server name internal to kibana as 
 breakdown kibana spcific env variables 'kibana_bryson-labs'
 - ELASTICSEARCH_HOSTS : Defines what host and port to looks for Elasticsearch on.In this example you see one of the advatages to using a named network, container name resolution. Docker does some cool things with networking under the hood, one of them is a DNS that allows for container name resolution. With this a container can reference another container by name, provided they're on the same network. This is much better than the alternative of hard coding IP addresses. 
 
-After creating the Elasticsearch database and Kibana to mantain it, we can start feeding it our hosts metrics. This solution makes use of MetricBeats as a simple way of sending . Now that we have the elasticsearch setup waiting for datadatabase Create MetricBeats container:
+### 4. Install Metricbeats - Docker Server
+After creating the Elasticsearch database and Kibana to mantain it, we can start feeding it our host's metrics. This solution makes use of MetricBeats as a simple way of sending `metric sets` (CPU, RAM, and Disk utilization) in near real-time. 
+
+The command to create a MetricBeats container:
 
 ```powershell
 docker container run -d --name=metricbeat `
-    --hostname=docker-host-01  `
+    --hostname=docker-server  `
     --net resource-monitor-net  `
     -e setup.kibana.host=http://kibana:5601  `
     -e output.elasticsearch.hosts=["http://elasticsearch:9200"]  `
@@ -117,17 +124,30 @@ docker container run -d --name=metricbeat `
     --volume="/:/hostfs:ro" `
     docker.elastic.co/beats/metricbeat:7.7.1
 ```
-breakdown hostname, --volume, bind mounts, --user
 
-Install MetricBeats to ubuntu:
+Docker by default isolates the container's filesystem from its host's. We need to give MetricBeats some visibility to the underlying host. Otherwise it can only collect metrics from it's self. The Docker way of exposing the filesystem is to create a bind-mount using the --volume flag. Bind-mounts follow the pattern `<host/source/path> : <container/target/path>`. 
+
+--- http://www.floydhilton.com/docker/2017/03/31/Docker-ContainerHost-vs-ContainerOS-Linux-Windows.html#:~:text=Container%20Host%3A%20Also%20called%20the,kernel%20with%20running%20Docker%20containers.&text=Note%20that%20windows%20containers%20require,while%20Linux%20containers%20do%20not. ---
+
+### 4. Install Metricbeats - Application Server (Optional)
+Optionally you can install MetricBeats on another computer or vm. This would approximate putting MetriBeats on an application server. Where your interested on monitoring the resouces of a remote host as it processes work loads. 
+
+Installation of MetricBeats on our application server is a bit more involved than the Docker install. Installation is platform specific when not using Docker, you can find the offical instructions [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-installation.html). 
+
+This illistrats the biggest value propissition for Docker. Before container technologies like Docker, making a solution platform agnostic was a massive undertaking. Now a solution can be built for Docker, and Docker handles the platform integration.
+
+After installing MetricBeats the configuration file will need to be replaced. 
+1. Download the example config [example.metricbeat.yml]({{ site.url }}{{ site.baseurl }}/assets/files/resource-monitor/example.metricbeat.yml)
+2. Replace `<Docker-Server-IP>` with the ip address of the Docker server (Section to edit shown below)
+3.  :
 - https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-installation.html
-- customize metricbeat.yml
+- To configure copy [example.metricbeat.yml]({{ site.url }}{{ site.baseurl }}/assets/files/resource-monitor/example.metricbeat.yml) to 
 
 ```yaml
 #-------------------------- Elasticsearch output ------------------------------
 output.elasticsearch:
   # Array of hosts to connect to.
-  hosts: ["<ES-Hostname-IP>:9200/"]
+  hosts: ["<Docker-Server-IP>:9200/"]
 
   # Protocol - either `http` (default) or `https`.
   #protocol: "https"
@@ -138,7 +158,8 @@ output.elasticsearch:
   #password: "changeme"
 
 #----------------------------- Logstash output --------------------------------
-```
+``` 
+    
 
 breakdown yaml comment tags, yaml use as a config for many linux services.
 
