@@ -12,40 +12,24 @@ excerpt: "ELK Resource Monitor w/ Docker: Part-1 Docker CLI"
 
 *First in the series exploring the use of docker through a practicle Use Case.*
 
-Welcome to the first in a series of posts that will follow my recent training with Docker. Most of my experiancedeveloping enterprise solutions has been gained inthe automotive indastry in varying engineering roles. During the on going Pandemic, I decided to take the extra time I had and learn Docker. Primarily with a focus on how to apply modern DevOps tools and concepts to the Monilithic/data-center based/regulated solutions I've built most my career.
+Welcome to the first in a series of posts that will follow my recent training with Docker. Most of my experiance developing enterprise solutions has been gained in the automotive industry through varying engineering roles. During the on going Pandemic, I decided to take the extra time I had and learn Docker. Primarily with a focus on how to apply modern DevOps tools and concepts to the Monilithic/data-center based/regulated solutions I've built most my career.
 
-I do assume:
+Docker solves one of my biggest problems in building BI solutions, varying deployment environments. When creating BI solutions the name of the game is flexability and speed. Solutions should be customized and local to the business that needs it. Even within the same department software and hardware used can vary greatly. Docker allows a developer to build an app and without concern, mostly, for the platform it'll be deployed to.
 
------ Assume you know what and why for Docker -----
+## The Setup
+The setup I'm using is docker for windows API version 1.40 on Windows 10 Home. We'll be using Linux containers. I'm also using PowerShell 7 in Windows Terminal. If you're following allong on a Linux, commands are generally the same excluding some OS specific syntax (file path, line continueation).     
 
------ My_Docker_Setup_&_Windows_Setup -----
-
-The setup I'm using is docker for windows API version 1.40 on Windows 10 Home. We'll be using Linux containers. I'm also using PowerShell 7 in Windows Terminal. If you're following allong on a Linux, commands are generally the same excluding some OS specific sintax (file path, line continueation).     
-
-In this post we'll cover some basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. This use case has the following design pattern:
+In this post we'll cover some basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. This use case uses the following design pattern:
 
 <img src="{{ site.url }}{{ site.baseurl }}/assets/images/ELK-resource-monitor-design-pattern-wht-bkg.png" alt="ELK-resource-monitor-design-pattern-wht-bkg">
 
-Elements:
-1. Docker Server: Docker host running all containers for this solution.
-2. Application Server: Ubuntu server running unrelated workloads.
-3. MetricBeats: Lightweight shipper that sends host metric data to a central data store.
-4. Elasticsearch: Document database specilized for timeseries and log processing use cases
-5. Kibana: Mangament panel for Elasticsearch indices
-6. Grafana: Monitoring platform for creating dashboards
-
------ Benefits_of_Solution_Componets = Containers -----
-
-## Learning Objectives
-The learning objectives for this post are:
-1. Explore docker basics for running a sequince of containers
-    - network (create)
-    - container (run)
-2. High level introduction to the ELK stack
-    - Elasticsearch
-    - MetricBeats
-    - Kibana
-    - Grafana
+Solution Components:
+1. **Docker Server:** Docker host running all containers for this solution.
+2. **Application Server:** Ubuntu server running unrelated workloads.
+3. **MetricBeats:** Lightweight shipper that sends host metric data to a central data store.
+4. **Elasticsearch:** Document database specilized for timeseries and log processing use cases
+5. **Kibana:** Mangament panel for Elasticsearch indices
+6. **Grafana:** Monitoring platform for creating dashboards
 
 ## Build Process
 Process: 
@@ -53,8 +37,8 @@ Process:
 2. Create Elasticsearch container
 3. Create Kibana container 
 4. Install Metricbeats
-    - docker container
-    - Ubuntu
+    - Docker Server
+    - Application Server (optional)
 5. Create Grafana container
 6. Config index pattern
 7. Configure Grafana
@@ -125,9 +109,12 @@ docker container run -d --name=metricbeat `
     docker.elastic.co/beats/metricbeat:7.7.1
 ```
 
-Docker by default isolates the container's filesystem from its host's. We need to give MetricBeats some visibility to the underlying host. Otherwise it can only collect metrics from it's self. The Docker way of exposing the filesystem is to create a bind-mount using the --volume flag. Bind-mounts follow the pattern `<host/source/path> : <container/target/path>`. 
+Docker by default isolates the container's filesystem from its host's. We need to give MetricBeats some visibility to the underlying host. Otherwise it can only collect metrics from it's self. The Docker way of exposing the filesystem is to create a bind-mount using the --volume flag. Bind-mounts follow the pattern `<host/source/path> : <container/target/path> : <permissions>`. 
 
 --- http://www.floydhilton.com/docker/2017/03/31/Docker-ContainerHost-vs-ContainerOS-Linux-Windows.html#:~:text=Container%20Host%3A%20Also%20called%20the,kernel%20with%20running%20Docker%20containers.&text=Note%20that%20windows%20containers%20require,while%20Linux%20containers%20do%20not. ---
+
+<img src="{{ site.url }}{{ site.baseurl }}/assets/images/bind-mount-diagram.png" alt="bind-mount-diagram">
+
 
 ### 4. Install Metricbeats - Application Server (Optional)
 Optionally you can install MetricBeats on another computer or vm. This would approximate putting MetriBeats on an application server. Where your interested on monitoring the resouces of a remote host as it processes work loads. 
@@ -139,13 +126,7 @@ This illistrats the biggest value propissition for Docker. Before container tech
 After installing MetricBeats the configuration file will need to be replaced. 
 1. Download the example config [example.metricbeat.yml]({{ site.url }}{{ site.baseurl }}/assets/files/resource-monitor/example.metricbeat.yml)
 2. Replace `<Docker-Server-IP>` with the ip address of the Docker server (Section to edit shown below)
-3. Rename the file metricbeats.yml and save to your config folder, this is deferent 
-
-
-# CP
-:
-- https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-installation.html
-- To configure copy [example.metricbeat.yml]({{ site.url }}{{ site.baseurl }}/assets/files/resource-monitor/example.metricbeat.yml) to 
+3. Rename the file metricbeats.yml and save to your config folder, The location of the config folder depends on the platform. For my Ubuntu host, the config folder is `/etc/metricbeats`. You can find your directory layout [here](https://www.elastic.co/guide/en/beats/metricbeat/current/directory-layout.html)
 
 ```yaml
 #-------------------------- Elasticsearch output ------------------------------
@@ -163,10 +144,9 @@ output.elasticsearch:
 
 #----------------------------- Logstash output --------------------------------
 ``` 
+*example.metricbeat.yml segment too edit*
 
-
-breakdown yaml comment tags, yaml use as a config for many linux services.
-
+### 5. Install Metricbeats - Docker Server
 Create Grafana container:
 
 ```powershell
