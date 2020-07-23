@@ -111,7 +111,6 @@ docker container run -d --name=metricbeat `
 
 Docker by default isolates the container's filesystem from its host's. We need to give MetricBeats some visibility to the underlying host. Otherwise it can only collect metrics from it's self. The Docker way of exposing the filesystem is to create a bind-mount using the --volume flag. Bind-mounts follow the pattern `<host/source/path> : <container/target/path> : <permissions>`. 
 
---- http://www.floydhilton.com/docker/2017/03/31/Docker-ContainerHost-vs-ContainerOS-Linux-Windows.html#:~:text=Container%20Host%3A%20Also%20called%20the,kernel%20with%20running%20Docker%20containers.&text=Note%20that%20windows%20containers%20require,while%20Linux%20containers%20do%20not. ---
 
 <img src="{{ site.url }}{{ site.baseurl }}/assets/images/bind-mount-diagram.png" alt="bind-mount-diagram">
 
@@ -146,9 +145,10 @@ output.elasticsearch:
 ``` 
 *example.metricbeat.yml segment too edit*
 
-### 5. Install Metricbeats - Docker Server
-Create Grafana container:
+### 5. Create Grafana Container
+We'll be using Grafana as the front end for this solution. Grafana provides a simple and atractive dashboard for log and metric data. For your Grafana instance to match the walkthrough use this config file [grafana.ini]({{ site.url }}{{ site.baseurl }}/assets/files/resource-monitor/grafana.ini). I've placed this file into a Grafana folder in my current directory.
 
+The command to create a Grafana container:
 ```powershell
 docker container run -d --name grafana `
     --net resource-monitor-net  `
@@ -158,7 +158,7 @@ docker container run -d --name grafana `
     -e GF_PATHS_CONFIG=/etc/grafana/grafana.ini  `
     grafana/grafana:7.0.3
 ```
-breakdown ${pwd}, include grafana.ini file
+In order to mount our ini file into the container we use the volume parameter. This time instead of using a fully qualified source path, the `${pwd}` variable is used for relative paths to the current working directory.
 
 ## Configure
 - Config Index Pattern
@@ -170,3 +170,6 @@ breakdown ${pwd}, include grafana.ini file
     * Index name = metricbeat-7*
     * Version = 7.0+
 - Import Grafana Dashboard
+
+## Finished Results 
+<img src="{{ site.url }}{{ site.baseurl }}/assets/images/grafana-screen-shot.png" alt="Resource-Monitor-Dashboard">
