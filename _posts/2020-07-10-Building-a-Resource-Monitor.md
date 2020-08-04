@@ -158,14 +158,19 @@ docker container run -d --name grafana `
     -e GF_PATHS_CONFIG=/etc/grafana/grafana.ini  `
     grafana/grafana:7.0.3
 ```
-In order to mount our ini file into the container we use the volume parameter. This time instead of using a fully qualified source path, the `${pwd}` variable is used for relative paths to the current working directory.
+In order to mount our ini file into the container we use the volume parameter. This time instead of using a fully qualified source path, the `${pwd}` variable is used for relative paths to the current working directory. This is a platform specific variable, Ubuntu equivilant `$(pwd)`.
 
 ## Configure
+With just those 4 commands, all of the infrastructure needed for the solution is in place. Any node with Metricbeats will be reporting metrics to Elasticsearch. Next we'll use Kibana to manage that stream of metrics.
+
+In a browser navigate `http://localhost:5601/`. You should see 
+6. Config index pattern
+7. Configure Grafana
 - Config Index Pattern
     - pattern name (wildcard pattern) [metricbeat-7*]
     - set timestamp field (@timestamp)
 - Create "Elasticsearch" datasource (on Grafana)
-    * set url http://localhost:9200/ or http://elasticsearch:9200/ or http://<IP>:9200/
+    * set url http://localhost:9200/ or http://elasticsearch:9200/
     * Pattern = No pattern
     * Index name = metricbeat-7*
     * Version = 7.0+
