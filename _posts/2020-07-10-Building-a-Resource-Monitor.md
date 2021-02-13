@@ -21,7 +21,7 @@ The setup I'm using is docker for windows API version 1.40 on Windows 10 Home. W
 
 In this post we'll cover some basic docker CLI concepts by building a simple resource monitoring dashboard using ELK tools. This use case uses the following design pattern:
 
-<img src="{{ site.url }}{{ site.baseurl }}/assets/images/ELK-resource-monitor-design-pattern-wht-bkg.png" alt="ELK-resource-monitor-design-pattern-wht-bkg">
+<img src="{{ site.url }}{{ site.baseurl }}/assets/images/ResourceMonitor/ELK-resource-monitor-design-pattern-wht-bkg.png" alt="ELK-resource-monitor-design-pattern-wht-bkg">
 
 Solution Components:
 1. **Docker Server:** Docker host running all containers for this solution.
@@ -112,7 +112,7 @@ docker container run -d --name=metricbeat `
 Docker by default isolates the container's filesystem from its host's. We need to give MetricBeats some visibility to the underlying host. Otherwise it can only collect metrics from it's self. The Docker way of exposing the filesystem is to create a bind-mount using the --volume flag. Bind-mounts follow the pattern `<host/source/path> : <container/target/path> : <permissions>`. 
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/assets/images/bind-mount-diagram.png" alt="bind-mount-diagram">
+<img src="{{ site.url }}{{ site.baseurl }}/assets/images/ResourceMonitor/bind-mount-diagram.png" alt="bind-mount-diagram">
 
 
 ### 4. Install Metricbeats - Application Server (Optional)
@@ -177,4 +177,4 @@ In a browser navigate `localhost:5601/`. You should see
 - Import Grafana Dashboard
 
 ## Finished Results 
-<img src="{{ site.url }}{{ site.baseurl }}/assets/images/grafana-screen-shot.png" alt="Resource-Monitor-Dashboard">
+<img src="{{ site.url }}{{ site.baseurl }}/assets/images/ResourceMonitor/grafana-screen-shot.png" alt="Resource-Monitor-Dashboard">
